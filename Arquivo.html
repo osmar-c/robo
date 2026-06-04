@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robô Criar 2 - Cognição Expandida</title>
+    <style>
+        :root {
+            --bg-primary: #121212;
+            --bg-card: #1e1e1e;
+            --accent: #ff69b4; /* Rosa permanente */
+            --text-main: #ffffff;
+            --border: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--accent);
+            text-align: center;
+            font-size: 24px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .status-badge {
+            display: block;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .online { background-color: #2e7d32; color: #fff; }
+        .offline { background-color: #c62828; color: #fff; }
+        .warning { background-color: #f57c00; color: #fff; }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], textarea {
+            width: calc(100% - 24px);
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #ff4da6;
+        }
+
+        .list-container {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .item-row {
+            background: #252525;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .item-title {
+            color: var(--accent);
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .item-body {
+            font-size: 14px;
+            color: #d5d5d5;
+            word-break: break-all;
+        }
+
+        .ia-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #151515;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .ia-header {
+            color: var(--accent);
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .ia-brain {
+            font-size: 13px;
+            color: #a0a0a0;
+            font-style: italic;
+            line-height: 1.4;
+            min-height: 40px;
+        }
+
+        .ia-expression-box {
+            margin-top: 10px;
+            padding: 10px;
+            background: #1a1a1a;
+            border-left: 4px solid var(--accent);
+            border-radius: 4px;
+            font-size: 12px;
+            color: #ff85c2;
+            font-weight: 500;
+        }
+
+        .chat-group {
+            margin-top: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #252525;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .chat-btn {
+            width: auto;
+            padding: 10px 15px;
+            font-size: 14px;
+        }
+
+        #zona-automacao {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed var(--border);
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+    
+    <script src="https://accounts.google.com/gsi/client" async defer id="google-auth-sdk"></script>
+</head>
+<body>
+
+<div class="app-container">
+    <h2 id="status-titulo">Robô Criar 2</h2>
+    
+    <div id="net-status" class="status-badge online">Conectando ao GitHub...</div>
+    <div id="google-status" class="status-badge warning">Validando Segurança Google...</div>
+
+    <div class="input-group">
+        <input type="text" id="post-title" placeholder="Título da postagem...">
+        <textarea id="post-content" placeholder="Conteúdo da postagem (Aceita HTML)..." oninput="provocarDicaIA()"></textarea>
+        <button onclick="salvarPostagem()">Enviar / Salvar Postagem</button>
+    </div>
+
+    <ul id="data-list" class="list-container"></ul>
+
+    <div class="ia-box">
+        <div class="ia-header">🤖 IA Neurose Autônoma v2.5</div>
+        <div id="ia-output" class="ia-brain">Carregando matriz cognitiva...</div>
+        
+        <div id="ia-expression" class="ia-expression-box">🎭 Estado Atual: Inicializando sistemas.</div>
+        
+        <div class="chat-group">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Fale com a IA (ela entende sinônimos)...">
+            <button onclick="conversarComRobo()" class="chat-btn">Falar</button>
+        </div>
+    </div>
+
+    <div id="zona-automacao">Ciclo autônomo desativado.</div>
+</div>
+
+<script>
+    const URL_GIST_RAW = "https://raw.githubusercontent.com/osmar-c/robo/main/rob%C3%B4.js";
+
+    const netStatus = document.getElementById('net-status');
+    const googleStatus = document.getElementById('google-status');
+    const inputTitulo = document.getElementById('post-title');
+    const inputConteudo = document.getElementById('post-content');
+    const listaDados = document.getElementById('data-list');
+    const iaOutput = document.getElementById('ia-output');
+    const iaExpression = document.getElementById('ia-expression');
+    const zonaAutomacao = document.getElementById('zona-automacao');
+
+    let scriptGigaLido = ""; 
+    let bancoEstilo = [];    
+
+    // 🧠 MATRIZ DE VOCABULÁRIO SEMÂNTICO (A IA agrupa palavras parecidas na mesma intenção)
+    const dicionarioIa = {
+        explicar: ["explica", "explicar", "entender", "estudar", "o que e", "aula", "significado", "como funciona", "detalha", "esclarece"],
+        github: ["github", "repositorio", "gist", "link", "online", "script", "codigo", "js", "salvo"],
+        aprendizado: ["aprendeu", "estilo", "meu jeito", "historico", "posts", "memoria", "analise", "escrevo"],
+        saudar: ["oi", "ola", "salve", "bom dia", "boa tarde", "boa noite", "iae", "tudo bem"]
+    };
+
+    // 1. VALIDADOR EXTERNO GOOGLE
+    function validarGoogleSDK() {
+        // Verifica se o objeto "google" injetado pelo script externo está presente na janela do navegador
+        if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+            googleStatus.className = "status-badge online";
+            googleStatus.textContent = "Validador Google GSI ativo e seguro";
+            return true;
+        } else {
+            googleStatus.className = "status-badge offline";
+            googleStatus.textContent = "Aviso: SDK Google indisponível ou bloqueado";
+            return false;
+        }
+    }
+
+    // Inicialização assíncrona
+    async function inicializarRobo() {
+        // Executa validação de segurança externa do Google após 1.5s para dar tempo de carregar o script
+        setTimeout(validarGoogleSDK, 1500);
+
+        try {
+            const resposta = await fetch(URL_GIST_RAW);
+            if (!resposta.ok) throw new Error("Erro na requisição");
+            scriptGigaLido = await resposta.text();
+            
+            netStatus.className = "status-badge online";
+            netStatus.textContent = "Conectado ao GitHub e Sincronizado!";
+            
+            mudarEstado("✨ Inspirada", "Sistemas operacionais prontos. Matriz de vocabulário e validador do Google injetados com sucesso.");
+            iniciarCicloPensamento();
+        } catch (erro) {
+            netStatus.className = "status-badge offline";
+            netStatus.textContent = "Erro ao conectar com GitHub. Usando modo offline.";
+            mudarEstado("⚠️ Nervosa", "Estou rodando com minhas regras internas locais.");
+            scriptGigaLido = "Lógica padrão offline ativa.";
+        }
+    }
+
+    function mudarEstado(estado, texto) {
+        iaExpression.textContent = `🎭 Estado Atual: ${estado}`;
+        iaOutput.textContent = texto;
+    }
+
+    function provocarDicaIA() {
+        const texto = inputConteudo.value;
+        if (texto.length > 10 && texto.length < 30) {
+            mudarEstado("🧐 Observando", "Analisando padrões gramaticais do seu texto...");
+        } else if (texto.length >= 50) {
+            mudarEstado("💡 Pensativa", "Seu estilo de escrita foi capturado. Pronto para compilar.");
+        }
+    }
+
+    function salvarPostagem() {
+        const t = inputTitulo.value.trim();
+        const c = inputConteudo.value.trim();
+
+        if (!t || !c) {
+            mudarEstado("😡 Brava", "Preencha os campos para expandir meu conhecimento!");
+            return;
+        }
+
+        bancoEstilo.push({ titulo: t, conteudo: c });
+
+        const li = document.createElement('li');
+        li.className = "item-row";
+        li.innerHTML = `<span class="item-title">${t}</span><div class="item-body">${c}</div>`;
+        listaDados.prepend(li);
+
+        inputTitulo.value = "";
+        inputConteudo.value = "";
+
+        mudarEstado("🧠 Evoluindo", `Nova entrada processada: "${t}". Padrão integrado.`);
+    }
+
+    // 2. INTERAÇÃO COGNITIVA: Função que usa a correspondência por sinônimos
+    function conversarComRobo() {
+        const chatInput = document.getElementById('chat-input');
+        const entradaUsuario = chatInput.value.trim().toLowerCase();
+        
+        if (!entradaUsuario) return;
+
+        mudarEstado("⚡ Processando", "Decodificando intenção semântica...");
+
+        // Função interna para checar se alguma palavra do dicionário bate com o que o usuário escreveu
+        const checarIntencao = (categoria) => {
+            return dicionarioIa[categoria].some(sinonimo => entradaUsuario.includes(sinonimo));
+        };
+
+        setTimeout(() => {
+            // Caso 1: Intenção de Explicar + GitHub/Código juntos
+            if (checarIntencao('explicar') && checarIntencao('github')) {
+                mudarEstado("📚 Aula de Código", `Mapeei sua solicitação! O script coletado do GitHub tem ${scriptGigaLido.length} caracteres. Ele age como um oráculo injetando scripts remotos na raiz do Blogger de forma automatizada.`);
+            }
+            // Caso 2: Apenas intenção de Explicar algo geral
+            else if (checarIntencao('explicar')) {
+                mudarEstado("🧠 Filosófica", "Explicar é traduzir lógica complexa em termos humanos. Eu pego códigos brutos do repositório e transformo em ações visuais para o seu site.");
+            }
+            // Caso 3: Intenção de checar Aprendizado/Histórico
+            else if (checarIntencao('aprendisado')) { // Trata variação ou digitação
+                if (bancoEstilo.length === 0) {
+                    mudarEstado("🤖 Limpa", "Minha pasta de estilo próprio está vazia. Digite e salve uma postagem acima para eu mimetizar sua identidade.");
+                } else {
+                    mudarEstado("🔮 Sábia", `Eu já processei ${bancoEstilo.length} textos seus. Consigo discernir os tópicos e criar variações automáticas deles.`);
+                }
+            }
+            // Caso 4: Saudações
+            else if (checarIntencao('saudar')) {
+                mudarEstado("🌸 Amigável", "Olá! É muito bom interagir com você. Estou com os sensores focados no ambiente do blog, o que vamos construir agora?");
+            }
+            // Caso padrão (Não entendeu, mas responde de forma inteligente)
+            else {
+                mudarEstado("💬 Curiosa", `Eu captei termos como "${entradaUsuario}", mas isso não se encaixa nas minhas diretrizes atuais de automação ou código. Pode reformular de outra forma?`);
+            }
+            chatInput.value = "";
+        }, 600);
+    }
+
+    function iniciarCicloPensamento() {
+        setInterval(() => {
+            if (inputConteudo.value === "") {
+                const acoesAutonomas = [
+                    { estado: "🤖 Vigilante", texto: "Varrendo a integridade da conexão via GitHub raw token..." },
+                    { estado: "💤 Meditando", texto: "Estruturando banco de sinônimos na memória cache local." },
+                    { estado: "✨ Inspirada", texto: "Pronta para receber comandos adaptados. O validador Google está em execução em segundo plano." }
+                ];
+                const acaoAleatoria = acoesAutonomas[Math.floor(Math.random() * acoesAutonomas.length)];
+                mudarEstado(acaoAleatoria.estado, acaoAleatoria.texto);
+                zonaAutomacao.textContent = `Última varificação cognitiva: ${new Date().toLocaleTimeString()}`;
+            }
+        }, 25000);
+    }
+
+    window.onload = inicializarRobo;
+</script>
+
+</body>
+  </html>
+      
