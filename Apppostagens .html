@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicativo Corrigido - Fluxo Contínuo</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* CONTAINER PRINCIPAL EXPANDIDO */
+        .app-container {
+            background-color: #1e1e1e;
+            width: 100%;
+            max-width: 480px;
+            height: 90vh;
+            max-height: 700px;
+            border-radius: 16px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #2a2a2a;
+        }
+
+        /* BARRA SUPERIOR (HEADER) */
+        .app-header {
+            background-color: #252525;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #333;
+        }
+
+        /* BOTÃO VOLTAR MODERNO */
+        .back-btn {
+            background: none;
+            border: none;
+            color: #ff4081;
+            font-size: 20px;
+            cursor: pointer;
+            display: none; /* Controlado dinamicamente via JS (flex/none) */
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            transition: 0.2s;
+        }
+        .back-btn:hover {
+            color: #fff;
+            transform: scale(1.1);
+        }
+
+        /* BOTÃO MENU HAMBÚRGUER */
+        .menu-hamburger {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none; /* Controlado dinamicamente via JS (flex/none) */
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            z-index: 100;
+        }
+
+        .menu-hamburger span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background-color: #ff4081;
+            border-radius: 3px;
+            transition: 0.3s;
+        }
+
+        .app-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #fff;
+            flex: 1;
+            text-align: center;
+        }
+
+        .status-badge {
+            background-color: #ff9800;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        /* CORPO DO APLICATIVO */
+        .app-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* NAVEGAÇÃO / MENU LATERAL GAVETA */
+        .sidebar-menu {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 75%;
+            height: 100%;
+            background-color: #1a1a1a;
+            z-index: 99;
+            box-shadow: 5px 0 25px rgba(0,0,0,0.8);
+            transition: 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+            padding: 60px 20px 20px 20px;
+            box-sizing: border-box;
+        }
+
+        .sidebar-menu.open {
+            left: 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 14px;
+            color: #ddd;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #252525;
+            transition: 0.2s;
+            border-left: 4px solid transparent;
+        }
+
+        .menu-item:hover, .menu-item.active-menu {
+            background: #2a2a2a;
+            color: #ff4081;
+            border-left-color: #ff4081;
+        }
+
+        /* ELEMENTOS DE FORMULÁRIO */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+        input, textarea {
+            width: 100%; padding: 12px; background-color: #2a2a2a;
+            border: 1px solid #444; border-radius: 8px; color: white;
+            box-sizing: border-box; font-size: 14px;
+        }
+        textarea { height: 80px; resize: none; }
+
+        /* BOTÕES MODERNOS */
+        .btn {
+            width: 100%; padding: 12px; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; font-size: 14px;
+            transition: 0.2s; display: inline-flex; justify-content: center; align-items: center;
+            text-decoration: none; box-sizing: border-box;
+        }
+        .btn-primary { background-color: #ff4081; color: white; }
+        .btn-primary:hover { background-color: #f50057; }
+        .btn-sms { background-color: #0288d1; color: white; margin-top: 10px; }
+        .btn-block { background-color: #333; color: #ff5252; margin-top: 20px; }
+
+        /* TELAS */
+        .screen { display: none; }
+        .screen.active-screen { display: block; }
+
+        /* FEED DE POSTS MODERNIZADO */
+        .feed-container { margin-top: 10px; }
+        .post-card {
+            background: #252525; padding: 15px; border-radius: 10px;
+            margin-bottom: 12px; border-left: 4px solid #00e676;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .post-header { display: flex; justify-content: space-between; font-size: 11px; color: #777; margin-bottom: 8px; }
+        .post-author { color: #00e676; font-weight: bold; }
+        .post-body { font-size: 14px; color: #eee; line-height: 1.4; }
+        .btn-delete { background: #ff5252; color: white; border: none; padding: 4px 10px; font-size: 11px; border-radius: 4px; cursor: pointer; font-weight: bold; float: right; margin-top: 5px; }
+
+        /* HUB FLUTUANTE DE SITES (OUTROS BLOGS) */
+        .hub-flutuante {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+        }
+
+        .hub-btn-principal {
+            background-color: #ff4081;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .hub-menu-links {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            background-color: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 180px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            animation: surgirAcima 0.3s ease-out;
+        }
+
+        .hub-link {
+            background-color: #252525;
+            color: #fff;
+            padding: 10px;
+            font-size: 12px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.2s;
+        }
+
+        .hub-link:hover {
+            background-color: #ff4081;
+            color: white;
+        }
+
+        @keyframes surgirAcima {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* NOTIFICAÇÃO FLOATING TOAST */
+        .toast-notification {
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%) translateY(-100px);
+            background-color: #00e676; color: #000; padding: 12px 24px;
+            border-radius: 30px; font-weight: bold; z-index: 10000;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4); transition: transform 0.3s ease;
+        }
+        .toast-notification.visible { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<!-- Alerta Flutuante -->
+<div id="toastNotification" class="toast-notification">🔔 Ação realizada!</div>
+
+<!-- HUB FLUTUANTE DE ACESSO AOS OUTROS SITES -->
+<div class="hub-flutuante">
+    <button class="hub-btn-principal" onclick="toggleHubMenu()">🌐</button>
+    <div class="hub-menu-links" id="hubMenuLinks">
+        <span style="font-size: 10px; color: #777; font-weight: bold; padding: 4px;">MEUS OUTROS SITES</span>
+        <a href="https://makepaz.blogspot.com" target="_blank" class="hub-link">🕊️ Make Paz</a>
+        <a href="https://somosoquebuscamos.blogspot.com" target="_blank" class="hub-link">🔍 Somos o Que Buscamos</a>
+        <a href="https://tabloidedobrasil.blogspot.com" target="_blank" class="hub-link">📰 Tabloide do Brasil</a>
+    </div>
+</div>
+
+<div class="app-container">
+    
+    <!-- HEADER -->
+    <div class="app-header">
+        <!-- SETINHA DE VOLTAR -->
+        <button class="back-btn" id="backBtn" onclick="voltarParaAbaAnterior()">←</button>
+        
+        <!-- MENU HAMBÚRGUER -->
+        <button class="menu-hamburger" id="menuBtn" onclick="toggleSidebar()">
+            <span></span><span></span><span></span>
+        </button>
+        <div class="app-title" id="headerTitle">Minha Ferramenta</div>
+        <div class="status-badge" id="appStatus">BLOQUEADO</div>
+    </div>
+
+    <!-- MENU LATERAL (ESTILO SITE/NAVEGADOR) -->
+    <div class="sidebar-menu" id="sidebarMenu">
+        <a href="#" class="menu-item active-menu" onclick="switchTab('tabPostar', 'Criar Publicação')">📝 Criar Postagem</a>
+        <a href="#" class="menu-item" onclick="switchTab('tabFeed', 'Mural de Posts')">📜 Ver Feed/Mural</a>
+        <a href="#" class="menu-item" onclick="switchTab('tabSms', 'Chat SMS Direto')">💬 Enviar SMS Mobile</a>
+        <button class="btn btn-block" onclick="executarBloqueio()">🔒 Bloquear App</button>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL (MUDANÇA DE ABAS) -->
+    <div class="app-content">
+        
+        <!-- TELA DE LOGIN / CADASTRO -->
+        <div id="screenLogin" class="screen active-screen">
+            <div class="form-group">
+                <label>Seu Nome:</label>
+                <input type="text" id="regName" value="Jt">
+            </div>
+            <div class="form-group">
+                <label>Sua Idade:</label>
+                <input type="number" id="regAge" value="32">
+            </div>
+            <button class="btn btn-primary" onclick="realizarLoginDevice()">🔓 Desbloquear com o Aparelho</button>
+        </div>
+
+        <!-- ABA: CRIAR POSTAGEM -->
+        <div id="tabPostar" class="screen">
+            <div class="form-group">
+                <label id="userDisplayLabel">Postando como: Jt</label>
+                <textarea id="postContentInput" placeholder="O que você quer publicar no mural offline hoje?"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="salvarNovaPostagem()">Publicar no Mural</button>
+        </div>
+
+        <!-- ABA: VER MURAL DE POSTS -->
+        <div id="tabFeed" class="screen">
+            <div class="feed-container" id="muralPostsContainer">
+                <!-- Posts injetados dinamicamente -->
+            </div>
+        </div>
+
+        <!-- ABA: CHAT SMS MOBILE -->
+        <div id="tabSms" class="screen">
+            <div style="background: #1565c0; padding: 12px; border-radius: 8px; font-size: 12px; margin-bottom: 15px; line-height: 1.4;">
+                <strong>Como Funciona:</strong> Ao clicar no botão moderno abaixo, o sistema chamará o app de mensagens do seu chip imediatamente sem travas.
+            </div>
+            <div class="form-group">
+                <label>Número do seu Celular (com DDD):</label>
+                <input type="tel" id="smsPhoneInput" placeholder="Ex: 21999999999">
+            </div>
+            <div class="form-group">
+                <label>Mensagem de Teste:</label>
+                <input type="text" id="smsTextInput" value="Olá! Teste de disparo de SMS da ferramenta funcionando perfeitamente.">
+            </div>
+            <a href="#" id="directSmsLink" class="btn btn-sms" onclick="prepararEnvioSMS(event)">📱 Abrir e Enviar SMS Real</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let usuarioLogado = JSON.parse(localStorage.getItem('user_profile')) || { id: "USER-MPZY0EPT7PTT", name: "Jt", age: "32" };
+    let historicoAbas = [];
+    let abaAtual = 'screenLogin';
+
+    function mostrarToast(mensagem, sucesso = true) {
+        const toast = document.getElementById('toastNotification');
+        toast.style.backgroundColor = sucesso ? "#00e676" : "#ff5252";
+        toast.style.color = sucesso ? "#000" : "#fff";
+        toast.innerText = message = mensagem;
+        toast.classList.add('visible');
+        setTimeout(() => toast.classList.remove('visible'), 3000);
+    }
+
+    function toggleHubMenu() {
+        const hubMenu = document.getElementById('hubMenuLinks');
+        const botao = document.querySelector('.hub-btn-principal');
+        if (hubMenu.style.display === 'flex') {
+            hubMenu.style.display = 'none';
+            botao.style.transform = 'rotate(0deg)';
+        } else {
+            hubMenu.style.display = 'flex';
+            botao.style.transform = 'rotate(180deg)';
+        }
+    }
+
+    function toggleSidebar() {
+        document.getElementById('sidebarMenu').classList.toggle('open');
+    }
+
+    // Gerenciador de Abas Corrigido
+    function switchTab(tabId, titleText, peloBotaoVoltar = false) {
+        if (!peloBotaoVoltar && abaAtual !== tabId) {
+            historicoAbas.push(abaAtual);
+        }
+
+        document.querySelectorAll('.app-content .screen').forEach(s => s.classList.remove('active-screen'));
+        document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active-menu'));
+        
+        document.getElementById(tabId).classList.add('active-screen');
+        document.getElementById('headerTitle').innerText = titleText;
+        abaAtual = tabId;
+
+        const backBtn = document.getElementById('backBtn');
+        const menuBtn = document.getElementById('menuBtn');
+
+        // Garante a visibilidade correta dos botões superiores sem travar
+        if (tabId === 'screenLogin') {
+            backBtn.style.display = 'none';
+            menuBtn.style.display = 'none';
+        } else if (tabId === 'tabPostar') {
+            backBtn.style.display = 'none';
+            menuBtn.style.display = 'flex';
+        } else {
+            backBtn.style.display = 'flex';
+            menuBtn.style.display = 'flex';
+        }
+
+        const activeMenuLink = Array.from(document.querySelectorAll('.menu-item')).find(item => item.getAttribute('onclick').includes(tabId));
+        if(activeMenuLink) activeMenuLink.classList.add('active-menu');
+
+        if(tabId === 'tabFeed') renderizarMural();
+        document.getElementById('sidebarMenu').classList.remove('open');
+    }
+
+    function voltarParaAbaAnterior() {
+        if (historicoAbas.length > 0) {
+            const abaAnterior = historicoAbas.pop();
+            let título = 'Criar Publicação';
+            
+            if (abaAnterior === 'tabFeed') título = 'Mural de Posts';
+            if (abaAnterior === 'tabSms') título = 'Chat SMS Direto';
+            if (abaAnterior === 'screenLogin') título = 'Minha Ferramenta';
+
+            switchTab(abaAnterior, título, true);
+        } else {
+            switchTab('tabPostar', 'Criar Publicação', true);
+        }
+    }
+
+    function realizarLoginDevice() {
+        const nome = document.getElementById('regName').value.trim();
+        const idade = document.getElementById('regAge').value.trim();
+
+        if(!nome || !idade) {
+            mostrarToast("Por favor preencha os dados de acesso!", false);
+            return;
+        }
+
+        usuarioLogado = { id: 'USER-' + Math.random().toString(36).substr(2, 9).toUpperCase(), name: nome, age: idade };
+        localStorage.setItem('user_profile', JSON.stringify(usuarioLogado));
+
+        // Força a ativação visual imediata dos menus pós-login
+        document.getElementById('menuBtn').style.display = 'flex';
+        
+        const status = document.getElementById('appStatus');
+        status.innerText = "CONECTADO";
+        status.style.backgroundColor = "#2e7d32";
+
+        document.getElementById('userDisplayLabel').innerHTML = `Postando como: <strong style="color: #ff4081;">${usuarioLogado.name}</strong>`;
+        
+        abaAtual = 'tabPostar';
+        historicoAbas = []; 
+        switchTab('tabPostar', 'Criar Publicação', true);
+        mostrarToast(`Bem-vindo de volta, ${usuarioLogado.name}!`);
+    }
+
+    function executarBloqueio() {
+        document.getElementById('sidebarMenu').classList.remove('open');
+        
+        const status = document.getElementById('appStatus');
+        status.innerText = "BLOQUEADO";
+        status.style.backgroundColor = "#ff9800";
+        
+        abaAtual = 'screenLogin';
+        historicoAbas = [];
+        switchTab('screenLogin', 'Minha Ferramenta', true);
+        mostrarToast("Sessão finalizada com sucesso!");
+    }
+
+    function salvarNovaPostagem() {
+        const input = document.getElementById('postContentInput');
+        const texto = input.value.trim();
+
+        if(!texto) {
+            mostrarToast("Insira uma mensagem no campo!", false);
+            return;
+        }
+
+        let lista = JSON.parse(localStorage.getItem('app_mural_dados')) || [];
+        lista.unshift({
+            id: 'POST-' + Date.now(),
+            texto: texto,
+            autorNome: usuarioLogado.name,
+            autorId: usuarioLogado.id,
+            hora: new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'})
+        });
+
+        localStorage.setItem('app_mural_dados', JSON.stringify(lista));
+        input.value = '';
+        mostrarToast("Publicado no mural!");
+        switchTab('tabFeed', 'Mural de Posts');
+    }
+
+    function renderizarMural() {
+        const container = document.getElementById('muralPostsContainer');
+        let lista = JSON.parse(localStorage.getItem('app_mural_dados')) || [];
+
+        if(lista.length === 0) {
+            container.innerHTML = `<p style="text-align:center; color:#555; font-size:13px; margin-top:30px;">O mural está vazio.</p>`;
+            return;
+        }
+
+        container.innerHTML = '';
+        lista.forEach(post => {
+            container.innerHTML += `
+                <div class="post-card">
+                    <div class="post-header">
+                        <span class="post-author">👤 ${post.autorNome}</span>
+                        <span>🕒 ${post.hora}</span>
+                    </div>
+                    <div class="post-body">${post.texto}</div>
+                    <button class="btn-delete" onclick="removerPost('${post.id}', '${post.autorId}')">Excluir</button>
+                    <div style="clear:both;"></div>
+                </div>
+            `;
+        });
+    }
+
+    function removerPost(postId, autorId) {
+        if(usuarioLogado.id === autorId) {
+            let lista = JSON.parse(localStorage.getItem('app_mural_dados')) || [];
+            lista = lista.filter(p => p.id !== postId);
+            localStorage.setItem('app_mural_dados', JSON.stringify(lista));
+            renderizarMural();
+            mostrarToast("Postagem removida.");
+        } else {
+            mostrarToast("❌ Erro: Você não tem permissão!", false);
+        }
+    }
+
+    function prepararEnvioSMS(event) {
+        const num = document.getElementById('smsPhoneInput').value.trim();
+        const texto = document.getElementById('smsTextInput').value.trim();
+
+        if(!num) {
+            event.preventDefault();
+            mostrarToast("⚠️ Digite o seu número com DDD primeiro!", false);
+            return;
+        }
+
+        const linkBotao = document.getElementById('directSmsLink');
+        linkBotao.
