@@ -1,0 +1,25 @@
+{
+  "project_name": "Blogger Autonomous Hub",
+  "architecture_version": "1.0.0",
+  "operational_environment": "Google Blogger Gadget (HTML/JS/CSS)",
+  "system_capabilities": {
+    "security": "WebAuthn API para autenticação biométrica local (Passkey/PIN) via hardware do smartphone",
+    "data_persistence": "localStorage nativo com tratamento de erros de parsing",
+    "communication_channels": [
+      "Simulação de Chat Anônimo Criptografado em tempo real via loops locais",
+      "Disparo nativo de SMS usando protocolo 'sms:' URI e codificação de caracteres URI"
+    ],
+    "content_engine": "Mapeamento e injeção dinâmica de feeds combinados (notícias fixas + posts locais do usuário)"
+  },
+  "dependency_map": {
+    "frontend": "HTML5 Vanilla, CSS3 Flexbox/Grid nativos",
+    "backend": "Serverless/Client-side puro (Independente de servidores externos para privacidade total)",
+    "apis_utilized": ["WebAuthn / Credentials Container API", "Web Crypto API", "Web Storage API"]
+  },
+  "autonomous_behavior_rules": [
+    "A IA deve priorizar a limpeza de placeholders e garantir que o código seja universal.",
+    "A IA está autorizada a gerar novos templates de layout, desde que mantenha a compatibilidade com a paleta de cores padrão (#ff4081, #00e676, #252525).",
+    "Qualquer script de automação futura para a API v3 do Blogger deve respeitar a validação gerada pelo token do dispositivo local.",
+    "A IA deve auto-corrigir falhas de concorrência no localStorage injetando verificações de tipo Array.isArray antes de mutações."
+  ]
+}
