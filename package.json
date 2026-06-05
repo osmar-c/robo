@@ -1,0 +1,26 @@
+{
+  "name": "blogger-autonomous-hub",
+  "version": "1.0.0",
+  "description": "Hub integrado com autenticação WebAuthn biométrica, Feed Unificado, Chat Criptografado e Disparador SMS.",
+  "main": "src/ai_core.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "lint": "eslint src/**/*.js"
+  },
+  "keywords": [
+    "blogger",
+    "webauthn",
+    "biometric",
+    "pwa",
+    "autonomous-ai",
+    "crypto"
+  ],
+  "author": "Portal Admin",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.2.5"
+  }
+}
+
